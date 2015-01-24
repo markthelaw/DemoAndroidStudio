@@ -7,7 +7,7 @@ import de.greenrobot.daogenerator.Schema;
 public class GreenDAOGenerator {
 
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1, "greenDao.demo");
+        Schema schema = new Schema(1, "demo");
 
         addNote(schema);
 
@@ -15,10 +15,10 @@ public class GreenDAOGenerator {
     }
 
     private static void addNote(Schema schema) {
-        Entity note = schema.addEntity("FriendsList");
+        Entity note = schema.addEntity("PictureLocation");
         note.addIdProperty();
-        note.addStringProperty("username").notNull();
-        note.addStringProperty("friendUsername").notNull();
-        note.addStringProperty("friendRegid").notNull();
+        note.addStringProperty("name").notNull();
+        note.addStringProperty("url").notNull();
+//        note.addStringProperty("friendRegid").notNull();
     }
 }
