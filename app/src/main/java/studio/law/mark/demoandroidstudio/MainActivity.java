@@ -3,6 +3,8 @@ package studio.law.mark.demoandroidstudio;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -35,9 +37,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 
+import greenDao.demo.DaoMaster;
+import greenDao.demo.DaoSession;
+import greenDao.demo.PictureLocation;
+import greenDao.demo.PictureLocationDao;
 import studio.law.mark.demoandroidstudio.adapter.GalleryAdapter;
+import studio.law.mark.demoandroidstudio.models.PictureLocationModel;
 
 
 public class MainActivity extends Activity {
@@ -47,15 +55,23 @@ public class MainActivity extends Activity {
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
-
+    private Context mContext;
     private Button webCrawlerButton;
     // Declare Variables
     private ViewPager viewPager;
     private PagerAdapter adapter;
 
+
     private int[] imageIDs = {
             R.drawable.six_eight_nine, R.drawable.ten
     };
+
+    //sqlite variables
+    private PictureLocationDao pictureLocationDao;
+    private DaoMaster daoMaster;
+    private SQLiteDatabase db;
+    private DaoSession daoSession;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +89,7 @@ public class MainActivity extends Activity {
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-
+        mContext = MainActivity.this;
         //Gallery Code
         // Locate the ViewPager in viewpager_main.xml
         viewPager = (ViewPager) findViewById(R.id.pager);
@@ -85,6 +101,8 @@ public class MainActivity extends Activity {
         //button
         webCrawlerButton = (Button) this.findViewById(R.id.webCrawlerButton);
         webCrawlerButton.setOnClickListener(webCrawlerButtonHandler);
+
+
     }
 
 
@@ -197,7 +215,6 @@ public class MainActivity extends Activity {
             AsyncTask<Void, Void, Void> {
         //test url
         String url = "http://ck101.com/thread-3166378-1-1.html";
-        String url1 = "https://www.google.com/search?q=girls&biw=1920&bih=1075&source=lnms&tbm=isch&sa=X&ei=EzS9VPW3N9HesATj04LgDg&ved=0CAgQ_AUoAQ";
         String url2 = "http://freedwallpaper.com/girl-background-hd-images/";
         String url3 = "http://www.reddit.com/r/sexygirls";
         //folder location
@@ -205,7 +222,15 @@ public class MainActivity extends Activity {
 
         @Override
         protected Void doInBackground(Void... params) {
+            //grab instance of greenDao
+            DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(mContext,
+                    "url-db", null);
+            db = helper.getWritableDatabase();
+            daoMaster = new DaoMaster(db);
+            daoSession = daoMaster.newSession();
+            pictureLocationDao = daoSession.getPictureLocationDao();
 
+            Log.i("created url-db", helper.toString());
             File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "CrawlerImages");
             directory.mkdirs();
             Log.d("directory is: ", directory.toString());
@@ -218,13 +243,20 @@ public class MainActivity extends Activity {
             try {
                 Document doc = Jsoup.connect(url3).userAgent(userAgent).get();
                 Elements links = doc.select("a[href]"); // a with href
+                int counter = 0;
                 for (Element link : links) {
                     Log.i("links ", link.attr("abs:href"));
                     if (link.attr("abs:href").matches(regex1)) {
                         Log.i("found a jpg", link.attr("abs:href"));
 //                      don't download the images yet
 //                      getAndSaveImages(link.attr("abs:href"), folder);
-//                        let's put it in a db
+//                      let's put it in a db
+
+
+                        PictureLocation pictureLocation = new PictureLocation(null, "name" + counter, link.attr("abs:href")
+                        );
+                        pictureLocationDao.insert(pictureLocation);
+
 
                     }
                     String imageURL = link.attr("abs:href");
@@ -232,6 +264,13 @@ public class MainActivity extends Activity {
 
                 }
 
+                List<PictureLocation> pictureLocations = pictureLocationDao.queryBuilder()
+                       .limit(10).offset(10)
+                        .orderAsc(PictureLocationDao.Properties.Url).list();
+                Log.i("friend list", pictureLocations.toString());
+                for(PictureLocation pictureLocation : pictureLocations){
+                    getAndSaveImages(pictureLocation.getUrl(), folder);
+                }
 
 //                for (Element e : doc.select("img[src$=.png]")) {
 //                    if(e.getElementsByAttribute("width"))
@@ -255,12 +294,19 @@ public class MainActivity extends Activity {
             return null;
         }
 
-
         protected void onPostExecute() {
             // mDisplay.append(msg + "\n");
+
+
         }
     }
 
+    /**
+     *
+     * @param src - url of the image
+     * @param path - folder path of local folder
+     * @throws IOException
+     */
     private static void getAndSaveImages(String src, String path) throws IOException {
 
         String folder = null;
