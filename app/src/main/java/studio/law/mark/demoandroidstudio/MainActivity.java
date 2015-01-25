@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,7 +45,9 @@ import greenDao.demo.DaoMaster;
 import greenDao.demo.DaoSession;
 import greenDao.demo.PictureLocation;
 import greenDao.demo.PictureLocationDao;
+import studio.law.mark.demoandroidstudio.activities.SimpleImageActivity;
 import studio.law.mark.demoandroidstudio.adapter.GalleryAdapter;
+import studio.law.mark.demoandroidstudio.fragments.ImageGridFragment;
 import studio.law.mark.demoandroidstudio.models.PictureLocationModel;
 
 
@@ -57,6 +60,7 @@ public class MainActivity extends Activity {
     private CharSequence mTitle;
     private Context mContext;
     private Button webCrawlerButton;
+    private Button imageButton;
     // Declare Variables
     private ViewPager viewPager;
     private PagerAdapter adapter;
@@ -102,6 +106,9 @@ public class MainActivity extends Activity {
         webCrawlerButton = (Button) this.findViewById(R.id.webCrawlerButton);
         webCrawlerButton.setOnClickListener(webCrawlerButtonHandler);
 
+        //test image view
+        imageButton = (Button) this.findViewById(R.id.imageButton);
+        imageButton.setOnClickListener(imageButtonHandler);
 
     }
 
@@ -117,6 +124,20 @@ public class MainActivity extends Activity {
 
         }
     };
+
+    View.OnClickListener imageButtonHandler = new View.OnClickListener() {
+        public void onClick(View v) {
+            //call image activity
+            Intent intent = new Intent(MainActivity.this, SimpleImageActivity.class);
+            intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGridFragment.INDEX);
+            startActivity(intent);
+
+            Log.i("inside imageButtonHandler", "inside imageButtonHandler");
+
+
+        }
+    };
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

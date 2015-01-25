@@ -36,6 +36,13 @@
             android:id="@+id/webCrawlerButton"
             android:layout_gravity="center_horizontal|bottom" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start ImageView"
+            android:id="@+id/imageButton"
+            android:layout_gravity="right|bottom" />
+
 
     </FrameLayout>
     <!-- The navigation drawer -->

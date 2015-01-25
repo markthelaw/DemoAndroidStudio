@@ -2,4 +2,7 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material.Light">
     </style>
+
+    <style name="ProgressBarStyle" parent="@android:style/Widget.Holo.ProgressBar.Horizontal"/>
+
 </resources>
