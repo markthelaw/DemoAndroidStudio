@@ -15,11 +15,13 @@
  *******************************************************************************/
 package studio.law.mark.demoandroidstudio.fragments;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,12 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import java.util.List;
+
+import greenDao.demo.DaoMaster;
+import greenDao.demo.DaoSession;
+import greenDao.demo.PictureLocation;
+import greenDao.demo.PictureLocationDao;
 import studio.law.mark.demoandroidstudio.Constants;
 import studio.law.mark.demoandroidstudio.R;
 
@@ -44,14 +52,45 @@ public class ImagePagerFragment extends BaseFragment {
 
 	public static final int INDEX = 2;
 
-	String[] imageUrls = Constants.IMAGES;
-
+//	String[] imageUrls = Constants.IMAGES;
+String[] imageUrls = new String[100];
 	DisplayImageOptions options;
-
+    int imageUrlsLength = 0;
+    //GreenDao variables
+    private PictureLocationDao pictureLocationDao;
+    private DaoMaster daoMaster;
+    private SQLiteDatabase db;
+    private DaoSession daoSession;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+//load the url from greenDao
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(getActivity(),
+                "url-db", null);
+        db = helper.getWritableDatabase();
+        daoMaster = new DaoMaster(db);
+        daoSession = daoMaster.newSession();
+        pictureLocationDao = daoSession.getPictureLocationDao();
+        List<PictureLocation> pictureLocations = pictureLocationDao.queryBuilder()
+                .orderAsc(PictureLocationDao.Properties.Url).list();
+        Log.i("friend list", pictureLocations.toString());
+        int i = 0;
+        for (PictureLocation pictureLocation : pictureLocations) {
+            imageUrls[i] = pictureLocation.getUrl();
+            Log.i("pictureLocationURL", pictureLocation.getUrl());
+            Log.i("inside loading picture location", "count is " + i);
+            i++;
+            if (i == 100) {
+                break;
+            }
+        }
 
+        for (int j = 0; j < imageUrls.length; j++) {
+            if (imageUrls[j] != null) {
+                imageUrlsLength++;
+                Log.i("imageUrlsLength", Integer.toString(imageUrlsLength));
+            }
+        }
 		options = new DisplayImageOptions.Builder()
 				.showImageForEmptyUri(R.drawable.ic_empty)
 				.showImageOnFail(R.drawable.ic_error)
@@ -88,7 +127,7 @@ public class ImagePagerFragment extends BaseFragment {
 
 		@Override
 		public int getCount() {
-			return imageUrls.length;
+			return imageUrlsLength;
 		}
 
 		@Override

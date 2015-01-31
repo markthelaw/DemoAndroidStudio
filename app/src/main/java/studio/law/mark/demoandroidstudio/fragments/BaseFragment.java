@@ -35,7 +35,7 @@ public abstract class BaseFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setHasOptionsMenu(true);
+		setHasOptionsMenu(false);
 	}
 
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

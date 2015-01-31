@@ -1,4 +1,4 @@
-package studio.law.mark.demoandroidstudio;
+package studio.law.mark.demoandroidstudio.activities;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.support.v4.widget.DrawerLayout;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,10 +45,10 @@ import greenDao.demo.DaoMaster;
 import greenDao.demo.DaoSession;
 import greenDao.demo.PictureLocation;
 import greenDao.demo.PictureLocationDao;
-import studio.law.mark.demoandroidstudio.activities.SimpleImageActivity;
+import studio.law.mark.demoandroidstudio.Constants;
+import studio.law.mark.demoandroidstudio.R;
 import studio.law.mark.demoandroidstudio.adapter.GalleryAdapter;
 import studio.law.mark.demoandroidstudio.fragments.ImageGridFragment;
-import studio.law.mark.demoandroidstudio.models.PictureLocationModel;
 
 
 public class MainActivity extends Activity {
@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
             R.drawable.six_eight_nine, R.drawable.ten
     };
 
-    //sqlite variables
+    //GreenDao variables
     private PictureLocationDao pictureLocationDao;
     private DaoMaster daoMaster;
     private SQLiteDatabase db;
@@ -251,11 +251,11 @@ public class MainActivity extends Activity {
             daoSession = daoMaster.newSession();
             pictureLocationDao = daoSession.getPictureLocationDao();
 
-            Log.i("created url-db", helper.toString());
-            File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "CrawlerImages");
-            directory.mkdirs();
-            Log.d("directory is: ", directory.toString());
-            folder = directory.toString();
+//            Log.i("created url-db", helper.toString());
+//            File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "CrawlerImages");
+//            directory.mkdirs();
+//            Log.d("directory is: ", directory.toString());
+//            folder = directory.toString();
 
             String regex1 = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
 //            String regex = "[^\\s]+(\\\\.(?i)(jpg|png|gif|bmp))$)\";.*\\.jpe?g";
@@ -265,6 +265,7 @@ public class MainActivity extends Activity {
                 Document doc = Jsoup.connect(url3).userAgent(userAgent).get();
                 Elements links = doc.select("a[href]"); // a with href
                 int counter = 0;
+                HashMap<String, Integer> checkForDups = new HashMap<String, Integer>();
                 for (Element link : links) {
                     Log.i("links ", link.attr("abs:href"));
                     if (link.attr("abs:href").matches(regex1)) {
@@ -272,41 +273,31 @@ public class MainActivity extends Activity {
 //                      don't download the images yet
 //                      getAndSaveImages(link.attr("abs:href"), folder);
 //                      let's put it in a db
-
-
-                        PictureLocation pictureLocation = new PictureLocation(null, "name" + counter, link.attr("abs:href")
-                        );
-                        pictureLocationDao.insert(pictureLocation);
-
-
+                        //there are double images, so if its new image, we put in hashmap, so know its not found before.
+                        if (!checkForDups.containsKey(link.attr("abs:href"))) {
+                            Log.i("first add", link.attr("abs:href"));
+                            PictureLocation pictureLocation = new PictureLocation(null, "name" + counter, link.attr("abs:href")
+                            );
+                            pictureLocationDao.insert(pictureLocation);
+                            checkForDups.put(link.attr("abs:href"), 1);
+                        } else {
+                            Log.i("inside else statement", "already added");
+                        }
                     }
-                    String imageURL = link.attr("abs:href");
-//                    Document imageDoc = Jsoup.connect(imageURL)
-
                 }
+                Element nextPage = doc.getElementsByClass("nextprev").first();
 
-                List<PictureLocation> pictureLocations = pictureLocationDao.queryBuilder()
-                       .limit(10).offset(10)
-                        .orderAsc(PictureLocationDao.Properties.Url).list();
-                Log.i("friend list", pictureLocations.toString());
-                for(PictureLocation pictureLocation : pictureLocations){
-                    getAndSaveImages(pictureLocation.getUrl(), folder);
+                if (nextPage != null) {
+                    Log.i("nextPage1", nextPage.toString());
+                    Element a = nextPage.getElementsByAttribute("href").first();
+                    String nextPageLink = a.attr("href");
+                    //href is the nextPage
+                    Log.i("nextPageLink", nextPageLink);
+                    String nextPageHref = nextPage.attr("href");
+                    if (nextPageHref != null) {
+                        Log.i("nextPageHref", nextPageHref);
+                    }
                 }
-
-//                for (Element e : doc.select("img[src$=.png]")) {
-//                    if(e.getElementsByAttribute("width"))
-//                    //save images to storage
-//                    Log.i("img is: ", e.toString());
-//                    Log.i("width", "width is " + e.attr("width"));
-//                    Log.i("element e", e.toString());
-//                    if (e.attr("width") != null && e.attr("width").length() > 1) {
-//                        if (Integer.parseInt(e.attr("width")) > 100) {
-//
-//                            getAndSaveImages(e.absUrl("src"), folder);
-//
-//                        }
-//                    }
-//                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -321,46 +312,5 @@ public class MainActivity extends Activity {
 
         }
     }
-
-    /**
-     *
-     * @param src - url of the image
-     * @param path - folder path of local folder
-     * @throws IOException
-     */
-    private static void getAndSaveImages(String src, String path) throws IOException {
-
-        String folder = null;
-
-        //Exctract the name of the image from the src attribute
-        int indexName = src.lastIndexOf("/");
-
-        if (indexName == src.length()) {
-            src = src.substring(1, indexName);
-        }
-
-        indexName = src.lastIndexOf("/");
-        String name = src.substring(indexName, src.length());
-
-        System.out.println(name);
-
-        //Open a URL Stream
-        URL url = new URL(src);
-        InputStream in = url.openStream();
-        if (name.contains("jpg") || name.contains("gif")) {
-            name = path + name;
-        } else {
-            name = path + name + ".jpg";
-        }
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(name));
-
-        for (int b; (b = in.read()) != -1; ) {
-            out.write(b);
-        }
-        out.close();
-        in.close();
-
-    }
-
 
 }

@@ -16,6 +16,7 @@
 package studio.law.mark.demoandroidstudio.fragments;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AbsListView;
@@ -23,6 +24,9 @@ import android.widget.AbsListView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
+import java.util.List;
+
+import greenDao.demo.PictureLocation;
 import studio.law.mark.demoandroidstudio.Constants;
 import studio.law.mark.demoandroidstudio.R;
 import studio.law.mark.demoandroidstudio.activities.SimpleImageActivity;
@@ -83,6 +87,16 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 	}
 
 	private void applyScrollListener() {
-		listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling));
+//        Log.i("applyScrollListener", "inside AbsListViewBaseFragment");
+
+
+//		listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling, new EndlessScrollListener() {
+//            @Override
+//            public void onLoadMore(int page, int totalItemsCount) {
+//                List<PictureLocation> newData = loader.loadData();
+//                dataList.addAll(newData);
+//                adapter.notifyDataSetChanged();
+//            }
+//        }));
 	}
 }
