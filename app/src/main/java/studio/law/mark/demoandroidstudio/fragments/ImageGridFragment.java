@@ -89,6 +89,7 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
         url = "http://www.reddit.com/r/sexygirls";
 
 //        new LoadPictures().execute();
+        //initial loading
         loadPictures = new LoadPictures(pictureLocationDao, url, editor);
 
 //        pictureLocations = pictureLocationDao.queryBuilder().limit(5)
@@ -131,7 +132,10 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
         listView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startImagePagerActivity(position);
+                //needs to send in the image url to pager activity
+                //position is not needed anymore, but we have it just for fun.
+                String url1 = pictureLocations.get(position).getUrl();
+                startImagePagerActivity(position, url1);
             }
         });
 
