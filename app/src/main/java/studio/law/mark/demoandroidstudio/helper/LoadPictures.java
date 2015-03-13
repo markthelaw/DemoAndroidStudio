@@ -1,9 +1,12 @@
 package studio.law.mark.demoandroidstudio.helper;
 
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,8 +18,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import greenDao.demo.DaoMaster;
 import greenDao.demo.PictureLocation;
 import greenDao.demo.PictureLocationDao;
+import studio.law.mark.demoandroidstudio.activities.SimpleImageActivity;
 
 /**
  * Created by GTR on 1/28/2015.
@@ -29,17 +34,26 @@ public class LoadPictures extends AsyncTask<Void, Void, List<PictureLocation>> {
     private String url;
     private String nextPageURL;
     private SharedPreferences.Editor editor;
+    private ProgressDialog mProgressDialog;
+    private Activity simpleImageActivity;
+    private HashMap<String, Integer> nextPageUrls;
 
+    private SharedPreferences settings;
     //constructor, provide the dao, and the reddit url to initialize this loader
 
     /**
      * @param pictureLocationDao
      * @param url
+     * @param editor
+     * @param simpleImageActivity
      */
-    public LoadPictures(PictureLocationDao pictureLocationDao, String url, SharedPreferences.Editor editor) {
+    public LoadPictures(PictureLocationDao pictureLocationDao, String url, SharedPreferences.Editor editor, Activity simpleImageActivity, HashMap<String, Integer> nextPageUrls, SharedPreferences settings) {
         this.pictureLocationDao = pictureLocationDao;
         this.url = url;
         this.editor = editor;
+        this.simpleImageActivity = simpleImageActivity;
+        this.nextPageUrls = nextPageUrls;
+        this.settings = settings;
     }
 
     /**
@@ -107,7 +121,52 @@ public class LoadPictures extends AsyncTask<Void, Void, List<PictureLocation>> {
     }
 
     @Override
-    protected List<PictureLocation> doInBackground(Void... params) {
-        return this.getNextPage();
+    protected void onPreExecute() {
+        super.onPreExecute();
+        // Create a progressdialog
+        mProgressDialog = new ProgressDialog(simpleImageActivity);
+        // Set progressdialog title
+        mProgressDialog.setTitle("Picture loading Title");
+        // Set progressdialog message
+        mProgressDialog.setMessage("Loading more...");
+        mProgressDialog.setIndeterminate(false);
+        // Show progressdialog
+        mProgressDialog.show();
+
     }
+
+    @Override
+    protected List<PictureLocation> doInBackground(Void... params) {
+        int count = 0;
+
+        return this.getNextPage();
+//        while (true) {
+//            Log.i("inside doInBackground", "count is "  + count++);
+//            if (!nextPageUrls.containsKey(url)) {
+//                Log.i("inside if", "url is "  + url);
+//                return this.getNextPage();
+//
+//            }else{
+//                Log.i("inside else", "nextPageUrls is "  + nextPageUrls);
+//                try {
+//                    Thread.sleep(1000);
+//                    //try to get a new url
+//                    url = settings.getString("nextPageURL", null);
+//
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+    }
+
+    @Override
+    protected void onPostExecute(List<PictureLocation> results) {
+
+        Toast.makeText(simpleImageActivity, "loaded more", Toast.LENGTH_SHORT).show();
+        mProgressDialog.dismiss();
+
+    }
+
+
 }

@@ -33,6 +33,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -48,6 +50,7 @@ import greenDao.demo.DaoMaster;
 import greenDao.demo.DaoSession;
 import greenDao.demo.PictureLocation;
 import greenDao.demo.PictureLocationDao;
+import studio.law.mark.demoandroidstudio.Constants;
 import studio.law.mark.demoandroidstudio.R;
 import studio.law.mark.demoandroidstudio.helper.LoadPictures;
 import studio.law.mark.demoandroidstudio.listener.InfiniteScrollListener;
@@ -73,11 +76,20 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
     private SharedPreferences.Editor editor;
     private String url;
     private HashMap<String, Integer> nextPageUrls;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         settings = getActivity().getSharedPreferences("prefs", 0);
         editor = settings.edit();
+        //load sending url from bundle
+        Bundle args = getArguments();
+        //but first time it is not defined
+        if (args.getString(Constants.Extra.SUB_URL) != null && args.getString(Constants.Extra.SUB_URL).length() > 1) {
+            url = args.getString(Constants.Extra.SUB_URL);
+        } else {
+            url = "http://www.reddit.com/r/sexygirls";
+        }
 
         //load the url from greenDao
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(getActivity(),
@@ -86,11 +98,11 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
         daoMaster = new DaoMaster(db);
         daoSession = daoMaster.newSession();
         pictureLocationDao = daoSession.getPictureLocationDao();
-        url = "http://www.reddit.com/r/sexygirls";
 
+        nextPageUrls = new HashMap<String, Integer>();
 //        new LoadPictures().execute();
         //initial loading
-        loadPictures = new LoadPictures(pictureLocationDao, url, editor);
+        loadPictures = new LoadPictures(pictureLocationDao, url, editor, getActivity(), nextPageUrls, settings);
 
 //        pictureLocations = pictureLocationDao.queryBuilder().limit(5)
 //                .orderAsc(PictureLocationDao.Properties.Url).list();
@@ -107,7 +119,7 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
         Log.i("friend list", pictureLocations.toString());
 
 
-        nextPageUrls = new HashMap<String, Integer>();
+
 
         options = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.ic_stub)
@@ -125,6 +137,7 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fr_image_grid, container, false);
+
         settings = getActivity().getSharedPreferences("prefs", 0);
         listView = (GridView) rootView.findViewById(R.id.grid);
         imageAdapter = new ImageAdapter(getActivity(), pictureLocations);
@@ -139,17 +152,26 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
             }
         });
 
+        //load adview
+        AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
         //PauseOnScrollListener is a Android universal Image loader listener, it can wrap around my InfiniteScrollListener
         listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling, new InfiniteScrollListener(5) {
             @Override
             public void loadMore(int page, int totalItemsCount) throws ExecutionException, InterruptedException {
-                Log.i("outside load more", "next page url is: " + settings.getString("nextPageURL",null) + "totalItemsCount: " + totalItemsCount + " ");
-                if (totalItemsCount / 10 < page && settings.getString("nextPageURL",null)!=null && !nextPageUrls.containsKey(settings.getString("nextPageURL",null))) {
-                    Log.i("inside load more", "next page url is: " + settings.getString("nextPageURL",null));
+                Log.i("outside load more", "next page url is: " + settings.getString("nextPageURL", null) + "totalItemsCount: " + totalItemsCount + " ");
+                //TODO move this if condition check to inside asynctask
+                if (totalItemsCount / 10 < page && settings.getString("nextPageURL", null) != null) {
+                    Log.i("inside load more", "next page url is: " + settings.getString("nextPageURL", null));
+                    //this logic is getting very messed up
 
-                    nextPageUrls.put(settings.getString("nextPageURL",null),0);
-                    List<PictureLocation> newData = new LoadPictures(pictureLocationDao, settings.getString("nextPageURL", null), editor).execute().get();
-                    pictureLocations.addAll(newData);
+                    List<PictureLocation> newData = new LoadPictures(pictureLocationDao, settings.getString("nextPageURL", null), editor, getActivity(), nextPageUrls, settings).execute().get();
+                    nextPageUrls.put(settings.getString("nextPageURL", null), 0);
+                    if(newData!= null) {
+                        pictureLocations.addAll(newData);
+                    }
                     imageAdapter.notifyDataSetChanged();
                 }
             }
@@ -248,14 +270,6 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
     static class ViewHolder {
         ImageView imageView;
         ProgressBar progressBar;
-    }
-
-    // Append more data into the adapter
-    public void customLoadMoreDataFromApi(int offset) {
-        Log.i("customLoadMoreDataFromApi", "inside customLoadMoreDataFromApi");
-        // This method probably sends out a network request and appends new data items to your adapter.
-        // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
-        // Deserialize API response and then construct new objects to append to the adapter
     }
 
 }

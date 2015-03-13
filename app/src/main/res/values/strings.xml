@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Picture App</string>
+    <string name="app_name">Sexy Girls</string>
     <string name="edit_message">Enter a message</string>
     <string name="button_send">Send</string>
     <string name="action_settings">Settings</string>
@@ -8,14 +8,11 @@
 
 
     <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
+        <item>Sexy Girls</item>
+        <item>Sexy</item>
+        <item>Goddesses</item>
+        <item>Mila Kunis</item>
+        <item>Pretty Girls</item>
     </string-array>
 
 
@@ -23,8 +20,8 @@
     <!-- Activity titles -->
     <!--<string name="app_name">Universal Image Loader</string>-->
     <string name="ac_name_image_list">Image List Example</string>
-    <string name="ac_name_image_grid">Image Grid Example</string>
-    <string name="ac_name_image_pager">Image Pager Example</string>
+    <string name="ac_name_image_grid">Grid View</string>
+    <string name="ac_name_image_pager">Single View</string>
     <string name="ac_name_image_gallery">Image Gallery Example</string>
     <string name="ac_name_complex">Complex Example</string>
     <!-- Labels -->
@@ -45,4 +42,9 @@
 
     <!-- Content descriptions -->
     <string name="descr_image">Image</string>
+
+
+    <!--nav drawer-->
+    <string name="drawer_open">open</string>
+    <string name="drawer_close">close</string>
 </resources>

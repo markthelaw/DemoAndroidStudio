@@ -17,16 +17,33 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/app_name">
+
+        </activity>
+
+        <activity
+            android:name=".activities.SimpleImageActivity"
+            android:label="Image List Example"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".activities.LoadingActivity"
+            android:label="Girls Girls Girls"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+
         </activity>
 
+        <!--Include the AdActivity configChanges and theme. -->
         <activity
-            android:name=".activities.SimpleImageActivity"
-            android:label="Image List Example"></activity>
+            android:name="com.google.android.gms.ads.AdActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:theme="@android:style/Theme.Translucent" />
 
     </application>
 

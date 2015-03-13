@@ -17,11 +17,13 @@ package studio.law.mark.demoandroidstudio.fragments;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +31,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -68,35 +72,7 @@ String[] imageUrls = new String[1];
         Bundle agrs = getArguments();
         String url = agrs.getString(Constants.Extra.IMAGE_URL);
         imageUrls[0]= url;
-//load the url from greenDao
-//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(getActivity(),
-//                "url-db", null);
-//        db = helper.getWritableDatabase();
-//        daoMaster = new DaoMaster(db);
-//        daoSession = daoMaster.newSession();
-//        pictureLocationDao = daoSession.getPictureLocationDao();
-//        List<PictureLocation> pictureLocations = pictureLocationDao.queryBuilder()
-//                .orderAsc(PictureLocationDao.Properties.Url).list();
-//        Log.i("friend list", pictureLocations.toString());
-//        int i = 0;
-//        for (PictureLocation pictureLocation : pictureLocations) {
-//            imageUrls[i] = pictureLocation.getUrl();
-//            Log.i("pictureLocationURL", pictureLocation.getUrl());
-//            Log.i("inside loading picture location", "count is " + i);
-//            i++;
-//            if (i == 100) {
-//                break;
-//            }
-//        }
 
-
-
-//        for (int j = 0; j < imageUrls.length; j++) {
-//            if (imageUrls[j] != null) {
-//                imageUrlsLength++;
-//                Log.i("imageUrlsLength", Integer.toString(imageUrlsLength));
-//            }
-//        }
 		options = new DisplayImageOptions.Builder()
 				.showImageForEmptyUri(R.drawable.ic_empty)
 				.showImageOnFail(R.drawable.ic_error)
@@ -113,6 +89,10 @@ String[] imageUrls = new String[1];
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
 		ViewPager pager = (ViewPager) rootView.findViewById(R.id.pager);
+        //load adview
+        AdView mAdView = (AdView) rootView.findViewById(R.id.adViewPager);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 		pager.setAdapter(new ImageAdapter());
 		pager.setCurrentItem(0);
 		return rootView;
@@ -141,6 +121,9 @@ String[] imageUrls = new String[1];
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
+            //we need to grab the screen size
+            imageView.getLayoutParams().height = getScreenWidth();
+            imageView.getLayoutParams().width = getScreenHeight();
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 
 			ImageLoader.getInstance().displayImage(imageUrls[position], imageView, options, new SimpleImageLoadingListener() {
@@ -197,5 +180,23 @@ String[] imageUrls = new String[1];
 		public Parcelable saveState() {
 			return null;
 		}
+
+
 	}
+
+
+    private int getScreenWidth(){
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return (int) (size.x*1.2);
+    }
+
+    private int getScreenHeight(){
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return (int) (size.y*1.5);
+    }
+
 }

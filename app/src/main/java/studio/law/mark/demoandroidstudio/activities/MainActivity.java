@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
     private String[] mPlanetTitles;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
+//    private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     private Context mContext;
@@ -96,11 +96,11 @@ public class MainActivity extends Activity {
         mContext = MainActivity.this;
         //Gallery Code
         // Locate the ViewPager in viewpager_main.xml
-        viewPager = (ViewPager) findViewById(R.id.pager);
+        //viewPager = (ViewPager) findViewById(R.id.pager);
         // Pass results to ViewPagerAdapter Class
-        adapter = new GalleryAdapter(MainActivity.this, imageIDs);
+        //adapter = new GalleryAdapter(MainActivity.this, imageIDs);
         // Binds the Adapter to the ViewPager
-        viewPager.setAdapter(adapter);
+        //viewPager.setAdapter(adapter);
 
         //button
         webCrawlerButton = (Button) this.findViewById(R.id.webCrawlerButton);
